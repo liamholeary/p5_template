@@ -24,7 +24,7 @@ var ghostY = 100;
 function preload()
 {
     bgImg = loadImage("images/background.png");
-    playerImg = loadImage("images/player.png");
+    playerImg = loadImage("images/Dent.png");
     monsterImg = loadImage("images/monster.png");
     projectileImg = loadImage("images/projectile.png");
     ghostImg = loadImage ("images/ghost.png");
@@ -33,7 +33,7 @@ function setup()
 {
     createCanvas(canvasWidth, canvasHeight);
     player = createSprite(playerX, playerY, sprWidth, sprHeight);
-    player.addImage(playerImg, "images/player.png");
+    player.addImage(playerImg, "images/Dent.png");
     monster = createSprite(monsterX, monsterY, sprWidth, sprHeight);
     monster.addImage(monsterImg, "images/monster.png");
     ghost = createSprite(ghostX, ghostY, sprWidth, sprHeight);
@@ -43,9 +43,19 @@ function setup()
     
     enemy = new Group();
     enemy.add(monster);
+    enemy.add(ghost);
     
     player.setCollider("rectangle", 0, 0, 40, 40);
     monster.setCollider("rectangle", 0, 0, 40, 40);
+    ghost.setCollider("rectangle", 0, 0, 40, 40);
+    
+     for (var i = 0; i < 8; i++) {
+         var ang = random(360);
+         var px = random(canvasWidth - sprWidth) + sprWidth/2;
+         var py = random(canvasHeight - sprHeight) + sprHeight/2;
+         createEnemy(px, py);
+     }
+    
 }
 
 function playerControls()
@@ -94,6 +104,19 @@ function enemyMovements() {
 function collisions() {
     enemy.collide(projectile);
     player.collide(enemy);
+    enemy.overlap(projectile, destroyOther);
+    player.collide(enemy, gameOver);
+}
+
+function destroyOther (destroyed) {
+    destroyed.remove();
+    projectile.remove();
+}
+
+function gameOver() {
+    alert("GAME OVER");
+    window.location.reload();
+    clearInterval(interval);
 }
 
 function mousePressed() {
@@ -101,6 +124,15 @@ function mousePressed() {
     projectile.addImage(projectileImg);
     projectile.attractionPoint(10+speed, mouseX, mouseY);
     projectile.setCollider("rectangle", 0, 0, 40, 40);
+}
+
+function createEnemy(x, y) {
+    var newEnemy = createSprite(x,y); 
+    var attackImage = loadImage("images/enemy.png")
+    newEnemy.addImage(attackImage);
+    newEnemy.setSpeed(2.5, random(360));
+    newEnemy.setCollider("rectangle", 0, 0, 40, 40);
+    enemy.add(newEnemy);
 }
 
 function draw()
@@ -112,4 +144,15 @@ function draw()
     enemyMovements();
     ghost.attractionPoint(0.2, player.position.x, player.position.y)
     ghost.maxSpeed = 4;
+    for (var i = 0; i < enemy.length; i++)
+        {
+            var s = enemy[i];
+            if (s.position.x < -40) s.position.x = canvasWidth +40;
+            if (s.position.x > canvasWidth + 40) s.position.x = -40;
+            if (s.position.y < -40) s.position.y = canvasHeight +40;
+            if (s.position.y > canvasHeight + 40) s.position.y = -40;
+            
+        }
 }
+
+setInterval(draw, 10);
